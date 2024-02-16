@@ -1,8 +1,9 @@
 /* eslint-disable quotes */
 const { Pool } = require("pg");
-const InvariantError = require("../../exceptions/InvariantError");
 const { nanoid } = require("nanoid");
 const bcrypt = require("bcrypt");
+const InvariantError = require("../../exceptions/InvariantError");
+const NotFoundError = require("../../exceptions/NotFoundError");
 
 class UserService {
   constructor() {
@@ -20,6 +21,11 @@ class UserService {
     };
 
     const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new InvariantError("User gagal ditambahkan");
+    }
+
+    return result.rows[0].id;
   }
 
   async verifyUsername(username) {
@@ -34,6 +40,20 @@ class UserService {
         "Gagal menambahkan user. Username sudah di gunakan"
       );
     }
+  }
+
+  async getUserById(userId) {
+    const query = {
+      text: "SELECT id, username, fullname, FROM user WHERE id = $1",
+      values: [userId],
+    };
+
+    const result = await this._pool.query(query);
+    if (!result.rows.length) {
+      throw new NotFoundError("User tidak ditemukan");
+    }
+
+    return result.rows[0];
   }
 }
 
