@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 # notes-app-backend2
 
 notes-app-backend2
+=======
+# notes-app-back-end 2
+notes-app-back-end 2
+>>>>>>> c5e60e2ec8ae618e79d3331c2d7ebc11c30f21a8
 
 ## Instalasi
 
