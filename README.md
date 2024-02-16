@@ -1,6 +1,6 @@
-# OpenMusic-v1-api
+# notes-app-backend2
 
-Nodejs->HapiJS->postgresql
+notes-app-backend2
 
 ## Instalasi
 
