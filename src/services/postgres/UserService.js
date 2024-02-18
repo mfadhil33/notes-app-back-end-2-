@@ -1,3 +1,5 @@
+/* eslint-disable comma-dangle */
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable quotes */
 const { Pool } = require("pg");
 const { nanoid } = require("nanoid");

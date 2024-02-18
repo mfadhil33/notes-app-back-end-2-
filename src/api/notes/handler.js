@@ -1,17 +1,25 @@
 /* eslint-disable quotes */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
+
+const ClientError = require("../../exceptions/ClientError");
+
 /* eslint-disable no-underscore-dangle */
 class NotesHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service;
+    this._validator = validator;
+
     this.postNoteHandler = this.postNoteHandler.bind(this);
     this.getNotesHandler = this.getNotesHandler.bind(this);
-    this.getnoteByIdHandler = this.getnoteByIdHandler.bind(this);
+    this.getNoteByIdHandler = this.getNoteByIdHandler.bind(this);
+    this.putNoteByIdHandler = this.putNoteByIdHandler.bind(this);
+    this.deleteNoteByIdHandler = this.deleteNoteByIdHandler.bind(this);
   }
 
   async postNoteHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
       const { title = "untitled", body, tags } = request.payload;
       const noteId = await this._service.addNote({ title, body, tags });
       const response = h.response({
@@ -24,12 +32,21 @@ class NotesHandler {
       response.code(201);
       return response;
     } catch (error) {
-      const response = h.response({
-        status: "fail",
-        message: error.message,
-      });
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(400);
+        return response;
+      }
 
-      response.code(400);
+      // server error
+      const response = h.response({
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami",
+      });
+      response.code(500);
       return response;
     }
   }
@@ -44,7 +61,7 @@ class NotesHandler {
     };
   }
 
-  async getnoteByIdHandler(request, h) {
+  async getNoteByIdHandler(request, h) {
     try {
       const { id } = request.params;
       const notesById = await this.service.getNotesById(id);
@@ -56,18 +73,28 @@ class NotesHandler {
         },
       };
     } catch (error) {
-      const response = h.response({
-        status: "fail",
-        message: error.message,
-      });
-
-      response.code(404);
-      return response;
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
     }
+
+    // server error
+    const response = h.response({
+      status: "error",
+      message: "Maaf, terjadi kegagalan pada server kami",
+    });
+    response.code(500);
+    return response;
   }
 
-  async putNoteByIdHandler(requst, h) {
+  async putNoteByIdHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
       const { id } = request.params;
 
       await this._service.editNoteById(id, request.payload);
@@ -76,12 +103,20 @@ class NotesHandler {
         message: "Catatan berhasil di  perbarui",
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
         status: "fail",
-        mesasge: error.message,
+        message: "Maaf, terjadi kegagalan pada server kami",
       });
-
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
@@ -95,11 +130,20 @@ class NotesHandler {
         message: "Catatan berhasil dihapus",
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
+
       const response = h.response({
-        status: "fail",
-        message: error.message,
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami",
       });
-      response.code(404);
+      response.code(500);
       return response;
     }
   }

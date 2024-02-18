@@ -1,3 +1,4 @@
+/* eslint-disable quotes */
 const routes = (handler) => [
   {
     method: "POST",
@@ -12,7 +13,7 @@ const routes = (handler) => [
   {
     method: "GET",
     path: "/notes/{id}",
-    handler: handler.getnoteByIdHandler,
+    handler: handler.getNoteByIdHandler,
   },
   {
     method: "PUT",
